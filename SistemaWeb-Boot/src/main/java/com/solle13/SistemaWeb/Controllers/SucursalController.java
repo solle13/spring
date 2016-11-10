@@ -71,17 +71,6 @@ public class SucursalController {
 		  }
 	  }
 	  
-	  @RequestMapping(value="/sucursal_by_id")
-	  @ResponseBody
-	  public List<Sucursales> getbyId(int id){
-		  try{
-			  return _sucursalesDao.getbyId(id);
-		  }catch(Exception ex){
-			  System.out.println("error "+ex);
-			 return null; 
-		  }
-	  }
-	  
 	  @RequestMapping(value="/update", method=RequestMethod.POST)
 	  @ResponseBody
 	  public ResponseEntity<Sucursales> update(@RequestBody Sucursales sucursales) {

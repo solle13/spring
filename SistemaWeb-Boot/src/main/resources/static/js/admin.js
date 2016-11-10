@@ -40,7 +40,7 @@
 					obtener_data_eliminar("#contenido tbody",table);
     			})
     			.fail(function( jqXHR, textStatus, errorThrown ) {
-    				console.log("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
+    				$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
 				});
 			}//------------------------------------------fin tabla fabricas---------------------------------------------
 
@@ -76,7 +76,7 @@
     			.done(function( data, textStatus, jqXHR ) {
     				})
     			.fail(function( jqXHR, textStatus, errorThrown ) {
-     				console.log("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
+     				$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
      			});
 
      			$.ajax({
@@ -88,7 +88,7 @@
     			.done(function( data, textStatus, jqXHR ) {
     				})
     			.fail(function( jqXHR, textStatus, errorThrown ) {
-     				console.log("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
+     				$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
      			});
 
 				$.ajax({
@@ -100,47 +100,63 @@
     			.done(function( data, textStatus, jqXHR ) {
     				})
     			.fail(function( jqXHR, textStatus, errorThrown ) {
-     				console.log("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
+     				$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
      			});
-
-    			var myPromise = new Promise(function(resolve, reject) {
-					$.ajax({
-						contentType:'application/json; charset=utf-8',
-    					type: "GET",
-    					dataType: 'text',
-    					url: "/user/get-by-user?usuario="+lider+"", 
-					})  
-    				.done(function( data, textStatus, jqXHR ) {
-						 resolve(data);
-					})
-    				.fail(function( jqXHR, textStatus, errorThrown ) {
- 						console.log("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
-     					reject("error");
-  					});
-				});
-				myPromise.then(function(data){
-					return $.ajax({
+				
+				$.ajax({
+					contentType:'application/json; charset=utf-8',
+    				type: "GET",
+    				dataType: 'text',
+    				url: "/user/get-by-user?usuario="+lider+"", 
+				})  
+    			.done(function( data, textStatus, jqXHR ) {
+    				$.ajax({
 						contentType:'application/json; charset=utf-8',
     					type: "GET",
     					dataType: 'text',
     					url: "/user/delete?id="+data+"",
     				})	 
     				.done(function( data, textStatus, jqXHR ) {
-					})
+    					$.ajax({	
+    						type: "GET",
+    						dataType: "json",
+    						url: "/fabrica/all", 
+						})  
+    					.done(function( data, textStatus, jqXHR ) {
+    						$("#id_eliminar").val("");
+    						$("#lider_eliminar").val("");
+    						var table = $("#contenido").DataTable();
+    						table.rows().remove();
+    						table.rows.add(data); 
+							table.draw();
+    					})
+    					.fail(function( jqXHR, textStatus, errorThrown ) {
+    						$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
+    					});
+
+    					$.ajax({	////////////////////////////////////////////////actualizar ventas
+    						type: "GET",
+    						dataType: "json",
+    						url: "/ventas/all", 
+						})  
+    					.done(function( data, textStatus, jqXHR ) {
+    						var table = $("#contenidoVenta").DataTable();
+    						table.rows().remove();
+    						table.rows.add(data); 
+							table.draw();
+							$.notify("Se ha eliminado la fábrica","success");
+    					})
+    					.fail(function( jqXHR, textStatus, errorThrown ) {
+    						$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
+    					});
+    				})
     				.fail(function( jqXHR, textStatus, errorThrown ) {
-     					console.log("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
+     					$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
      				});
-				})
-				.then(function(data, textStatus){
-					$("#id_eliminar").val("");
-    				$("#lider_eliminar").val("");
-    				MostrarFabricas();
-    				MostrarVentas();
-    				$.notify("Se ha eliminado la fábrica","success");
-				})
-				.catch(function(error) {
-						console.log(error);
-				});
+        		})
+    			.fail(function( jqXHR, textStatus, errorThrown ) {
+     				$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
+     			});
 				return false;
 			}); //-----------------------------------eliminar fabrica ajax-----------------------------------
 
@@ -149,41 +165,43 @@
 				var Ubicacion = document.getElementById("ubicacion_edit").value;
 				var Lider = document.getElementById("userSave_edit").value;
 				var id = document.getElementById("id_edit").value;
-				
-				var myPromise = new Promise(function(resolve, reject) {
-					$.ajax({
-						contentType:'application/json; charset=utf-8',
-    					data:  JSON.stringify({"idFabrica":""+id+"","nombreFabrica":""+NombreFabrica+"","ubicacion":""+Ubicacion+"","lider":""+Lider+""}),
-    					type: "POST",
-    					dataType: 'json',
-    					url: "/fabrica/update", 
-					})  
-    				.done(function( data, textStatus, jqXHR ) {
-    					resolve();
-    				})
-    				.fail(function( jqXHR, textStatus, errorThrown ) {
-     					console.log("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
-     					reject();
-     				});
-				});
-
-				myPromise.then(function(){
-					$("#nombrefab_edit").val("");
+			
+				$.ajax({
+					contentType:'application/json; charset=utf-8',
+    				data:  JSON.stringify({"idFabrica":""+id+"","nombreFabrica":""+NombreFabrica+"","ubicacion":""+Ubicacion+"","lider":""+Lider+""}),
+    				type: "POST",
+    				dataType: 'json',
+    				url: "/fabrica/update", 
+				})  
+    			.done(function( data, textStatus, jqXHR ) {
+    				$("#nombrefab_edit").val("");
     				$("#ubicacion_edit").val("");
     				$("#userSave_edit").val("");
     				$("#id_edit").val("");
-    				MostrarFabricas();
-    				$.notify("Se ha actualizado la fábrica","success");
-				})
-				.catch(function(error) {
-					console.log(error);
-				});
-				
+    				$.ajax({	
+    					type: "GET",
+    					dataType: "json",
+    					url: "/fabrica/all", 
+					})  
+    				.done(function( data, textStatus, jqXHR ) {
+    					var table = $("#contenido").DataTable();
+    					table.rows().remove();
+    					table.rows.add(data); 
+						table.draw();
+						$.notify("Se ha actualizado la fábrica","success");
+    				})
+    				.fail(function( jqXHR, textStatus, errorThrown ) {
+    					$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
+    				});
+    			})
+    			.fail(function( jqXHR, textStatus, errorThrown ) {
+     				$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
+     			});
 				return false;
     		}); //---------------------------------------- fin editar fabrica---------------------------------------
 
 			var Fabrica_id;	          // variables globales de fabrica
-			var Nombre_Fabrica;		//Ayudan a cambiar los valores de lider
+			var Nombre_Fabrica;
 			var Ubicacion_Fabrica;
 			var Lider_Fabrica;
 
@@ -199,84 +217,81 @@
 				var pass1 = document.getElementById("passSave_lider").value;
 				var pass2= document.getElementById("confSave_lider").value;
 				if(pass1.length >= 5){
-					var myPromise = new Promise(function(resolve, reject) {
-						$.ajax({
-							contentType: 'application/json; charset=utf-8',
-							type: "GET",
-							dataType: 'json',
-							url: "/user/get-by-user?usuario="+user+"",
-						})
-						.done(function(data, textStatus, jqXHR ){
-							if(data!=0){
-								$.notify("El nombre de usuario no esta disponible","error");
-								reject("error");
-							}else if(data==0){
-								if(pass1===pass2){
-									resolve();
-								}
-								else{
-									$.notify("Las contraseñas no son iguales","error");
-									reject("error");
-								}
-							}	
-						})
-						.fail(function(jqXHR, textStatus, errorThrown){
-							console.log("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
-							reject("error");
-						});
-					});
-					
-					myPromise.then(function(){
-						return $.ajax({
+					$.ajax({
+						contentType: 'application/json; charset=utf-8',
+						type: "GET",
+						dataType: 'json',
+						url: "/user/get-by-user?usuario="+user+"",
+					})
+					.done(function(data, textStatus, jqXHR ){
+						if(data!=0){
+							$.notify("El nombre de usuario no esta disponible","error");
+						}
+						else if(data==0){
+							if(pass1===pass2){
+								$.ajax({
 									contentType: 'application/json; charset=utf-8',
 									type: "GET",
 									dataType: 'json',
 									url: "/user/get-by-user?usuario="+Lider_Fabrica+"",
 								})
 								.done(function(data, textStatus, jqXHR ){
+									var iduser=data;
+									$.ajax({
+										contentType: 'application/json; charset=utf-8',
+										data:  JSON.stringify({"idUsuario":""+iduser+"","usuario":""+user+"","pass":""+pass1+""}),
+										type: "POST",
+										dataType: 'json',
+										url: "/user/update",
+									})
+									.done(function(data, textStatus, jqXHR ){	
+									})
+									.fail(function(jqXHR, textStatus, errorThrown){
+										$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
+									});
 								})
 								.fail(function(jqXHR, textStatus, errorThrown){
-									console.log("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");	
+									$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");	
 								});
+
+								$.ajax({
+									contentType:'application/json; charset=utf-8',
+    								data:  JSON.stringify({"idFabrica":""+Fabrica_id+"","nombreFabrica":""+Nombre_Fabrica+"","ubicacion":""+Ubicacion_Fabrica+"","lider":""+user+""}),
+    								type: "POST",
+    								dataType: 'json',
+    								url: "/fabrica/update",
+								})  
+    							.done(function( data, textStatus, jqXHR ) {
+    								$("#userSave_lider").val("");
+    								$("#passSave_lider").val("");
+    								$("#confSave_lider").val("");
+    								$.ajax({	
+    									type: "GET",
+    									dataType: "json",
+    									url: "/fabrica/all",
+									})  
+    								.done(function( data, textStatus, jqXHR ) {
+    									var table = $("#contenido").DataTable();
+    									table.rows().remove();
+    									table.rows.add(data);
+										table.draw();
+										$.notify("Se ha editado el lider","success");
+									})
+    								.fail(function( jqXHR, textStatus, errorThrown ) {
+    									$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
+    								});
+    							})
+    							.fail(function( jqXHR, textStatus, errorThrown ) {
+     								$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
+     							});
+							}
+							else{
+								$.notify("Las contraseñas no son iguales","error");
+							}
+						}
 					})
-					.then(function(data, textStatus){
-						return $.ajax({
-							contentType: 'application/json; charset=utf-8',
-							data:  JSON.stringify({"idUsuario":""+data+"","usuario":""+user+"","pass":""+pass1+""}),
-							type: "POST",
-							dataType: 'json',
-							url: "/user/update",
-						})
-						.done(function(data, textStatus, jqXHR ){
-						})
-						.fail(function(jqXHR, textStatus, errorThrown){
-							console.log("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
-						});
-						
-   					})
-					.then(function(data, textStatus){
-						return $.ajax({
-							contentType:'application/json; charset=utf-8',
-   							data:  JSON.stringify({"idFabrica":""+Fabrica_id+"","nombreFabrica":""+Nombre_Fabrica+"","ubicacion":""+Ubicacion_Fabrica+"","lider":""+user+""}),
-   							type: "POST",
-   							dataType: 'json',
-   							url: "/fabrica/update",
-						})  
-   						.done(function( data, textStatus, jqXHR ) {
-   						})
-   						.fail(function( jqXHR, textStatus, errorThrown ) {
-   							console.log("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
-   						});
-					})
-					.then(function(data, textStatus){
-						$("#userSave_lider").val("");
-    					$("#passSave_lider").val("");
-    					$("#confSave_lider").val("");
-    					MostrarFabricas();
-    					$.notify("Se ha editado el lider","success");
-					})
-					.catch(function(error) {
-						console.log(error);
+					.fail(function(jqXHR, textStatus, errorThrown){
+						$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
 					});
 				}
 				else{
@@ -292,37 +307,22 @@
 				var Lider = document.getElementById("userSave").value;
 				var pass1 =	document.getElementById("passSave").value;
 				var pass2 = document.getElementById("confSave").value;
-
+				
 				if(pass1.length >= 5){
-					var myPromise = new Promise(function(resolve, reject) {
-						$.ajax({
+					$.ajax({
 						contentType: 'application/json; charset=utf-8',
 						type: "GET",
 						dataType: 'json',
 						url: "/user/get-by-user?usuario="+Lider+"",
-						})
-						.done(function(data, textStatus, jqXHR ){
-							if(data!=0){
-								$.notify("El nombre de usuario no esta disponible","error");
-								reject("Error");
-							}
-							else if(data==0){
-								if(pass1===pass2){
-									resolve();
-								}
-								else{
-									$.notify("Las contraseñas no son iguales","error");
-									reject("Error");
-								}
-							}
-						})
-						.fail(function( jqXHR, textStatus, errorThrown ) {
-     						console.log("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
-     					});
-					});
+					})
+					.done(function(data, textStatus, jqXHR ){
+						if(data!=0){
+							$.notify("El nombre de usuario no esta disponible","error");
+						}
+						else if(data==0){
+							if(pass1===pass2){
 
-					myPromise.then(function(){
-						return $.ajax({
+								$.ajax({
 									contentType:'application/json; charset=utf-8',
     								data:  JSON.stringify({"usuario":""+Lider+"","pass":""+pass1+""}),
     								type: "POST",
@@ -332,40 +332,54 @@
     							.done(function( data, textStatus, jqXHR ) {
     							})
     							.fail(function( jqXHR, textStatus, errorThrown ) {
-     								console.log("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
+     								$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
      							});
+							
+								$.ajax({
+									contentType:'application/json; charset=utf-8',
+    								data:  JSON.stringify({"nombreFabrica":""+NombreFabrica+"","ubicacion":""+Ubicacion+"","lider":""+Lider+""}),
+    								type: "POST",
+    								dataType: 'json',
+    								url: "/fabrica/save",
+								})  
+    							.done(function( data, textStatus, jqXHR ) {
+    								$("#nombrefab").val("");
+    								$("#ubicacion").val("");
+    								$("#userSave").val("");
+    								$("#passSave").val("");
+    								$("#confSave").val("");
+    								$.ajax({	
+    									type: "GET",
+    									dataType: "json",
+    									url: "/fabrica/all",
+									})  
+    								.done(function( data, textStatus, jqXHR ) {
+    									var table = $("#contenido").DataTable();
+    									table.rows().remove();
+    									table.rows.add(data);
+										table.draw();
+										$.notify("Fábrica guardada","success");
+    								})
+    								.fail(function( jqXHR, textStatus, errorThrown ) {
+    									$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
+    								});
+    							})
+    							.fail(function( jqXHR, textStatus, errorThrown ) {
+     								$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
+     							});
+							}
+							else{
+								$.notify("Las contraseñas no son iguales","error");
+							}
+						}
 					})
-					.then(function(data, textStatus){
-						return $.ajax({
-							contentType:'application/json; charset=utf-8',
-    						data:  JSON.stringify({"nombreFabrica":""+NombreFabrica+"","ubicacion":""+Ubicacion+"","lider":""+Lider+""}),
-    						type: "POST",
-    						dataType: 'json',
-    						url: "/fabrica/save",
-						})  
-    					.done(function( data, textStatus, jqXHR ) {		
-    					})
-    					.fail(function( jqXHR, textStatus, errorThrown ) {
-     						console.log("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
-     					});
-					})
-					.then(function(data, textStatus){
-						$("#nombrefab").val("");
-    					$("#ubicacion").val("");
-    					$("#userSave").val("");
-    					$("#passSave").val("");
-    					$("#confSave").val("");
-    					MostrarFabricas();
-    					$.notify("Fábrica guardada","success");
-					})
-					.catch(function(error) {
-						console.log(error);
+					.fail(function(jqXHR, textStatus, errorThrown){
+						$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
 					});
 				}
 				else{
 					$.notify("La contraseña debe tener 5 o mas caracteres","error");
 				}
-				
 				return false;
 			}); //---------------------------------------fin guardar fabrica------------------------------------
 
@@ -398,7 +412,7 @@
 					obtener_venta_eliminar("#contenidoVenta tbody",table);
     			})
     			.fail(function( jqXHR, textStatus, errorThrown ) {
-     				console.log("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
+     				$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
 				});
 			}//------------------------------------------fin tabla ventas-------------------------------------------------
 
@@ -409,36 +423,29 @@
 				});
 			} //--------------------------------------boton eliminar venta-------------------------------------
 			
+			var matriz;
 
 			function Grafico(fecha1,fecha2){ //--------------------------------------Grafico-------------------------------------
-					var myPromise = new Promise(function(resolve, reject) {
-						$.ajax({
-    						type: "GET",
-    						dataType: "json",
-    						url: "/fabrica/all",
+					$.ajax({
+    					type: "GET",
+    					dataType: "json",
+    					url: "/fabrica/all",
 						})  
-    					.done(function( data, textStatus, jqXHR ) {
-    						var datos=new Array(data.length);
-    						var i;
-    						for( i = 0; i < data.length; i ++){
-    							datos[i]= new Array(3);
-    						}
+    				.done(function( data, textStatus, jqXHR ) {
+    					var datos=new Array(data.length);
+    					var i;
+    					for( i = 0; i < data.length; i ++){
+    						datos[i]= new Array(3);
+    					}
 
-    						for( i=0; i < data.length; i ++){
-    							datos[i][0]=data[i].idFabrica;
-    							datos[i][1]=data[i].nombreFabrica;
-    							datos[i][2]=0;
-    						}
-    						resolve(datos);
-    					})
-    					.fail(function( jqXHR, textStatus, errorThrown ) {
-    						console.log("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
-    						reject("error");
-    					});
-					});
+    					for( i=0; i < data.length; i ++){
+    						datos[i][0]=data[i].idFabrica;
+    						datos[i][1]=data[i].nombreFabrica;
+    						datos[i][2]=0;
+    					}
+    					matriz=datos;
 
-					myPromise.then(function(matriz){
-						$.ajax({
+    					$.ajax({
     					type: "GET",
     					dataType: "json",
     					url: "/ventas/all_date?fecha1="+fecha1+"&fecha2="+fecha2+"",
@@ -450,6 +457,7 @@
     							for(j=0; j < matriz.length; j++){
     								if(data[i].idFabrica == matriz[j][0]){
     									matriz[j][2]= matriz[j][2] + data[i].cantidad;
+    									//alert("valor de data cantidad: "+data[i].cantidad+", valor total matriz: "+matriz[j][2]);
     								}
     							}
     						}
@@ -463,12 +471,12 @@
     						renderChart(etiqueta,valores);
     					})
     					.fail(function( jqXHR, textStatus, errorThrown ) {
-    						console.log("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
+    						$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
     					});
-					})
-					.catch(function(error) {
-						console.log(error);
-					});
+    				})
+    				.fail(function( jqXHR, textStatus, errorThrown ) {
+    					$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
+    				});
 				
     				function renderChart (etiqueta, valores) {
     					
@@ -524,12 +532,25 @@
     				url: "/ventas/delete?id="+id+"",
 				})  
     			.done(function( data, textStatus, jqXHR ) {
-    				$("#idventa_eliminar").val("");
-    				MostrarVentas();
-    				$.notify("Se ha eliminado la venta","success");
+    				$.ajax({	////////////////////////////////////////////////actualizar ventas
+    						type: "GET",
+    						dataType: "json",
+    						url: "/ventas/all", 
+						})  
+    					.done(function( data, textStatus, jqXHR ) {
+    						$("#idventa_eliminar").val("");
+    						var table = $("#contenidoVenta").DataTable();
+    						table.rows().remove();
+    						table.rows.add(data); 
+							table.draw();
+							$.notify("Se ha eliminado la venta","success");
+    					})
+    					.fail(function( jqXHR, textStatus, errorThrown ) {
+    						$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
+    					});
     				})
     			.fail(function( jqXHR, textStatus, errorThrown ) {
-     				console.log("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
+     				$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
      			});
      			return false;
     		});//----------------------------------------------eliminar venta ajax------------------------------------------------
@@ -537,38 +558,4 @@
 			
 
 		});
-
-		function MostrarFabricas(){
-			$.ajax({
-    			type: "GET",
-    			dataType: "json",
-    			url: "/fabrica/all", 
-			})  
-    		.done(function( data, textStatus, jqXHR ) {
-    			var table = $("#contenido").DataTable();
-    			table.rows().remove();
-    			table.rows.add(data); 
-				table.draw();
-    		})
-    		.fail(function( jqXHR, textStatus, errorThrown ) {
-    			console.log("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
-    		});
-		}
-
-		function MostrarVentas(){
-			$.ajax({
-    			type: "GET",
-    			dataType: "json",
-    			url: "/ventas/all", 
-			})  
-    		.done(function( data, textStatus, jqXHR ) {
-    			var table = $("#contenidoVenta").DataTable();
-    			table.rows().remove();
-    			table.rows.add(data); 
-				table.draw();
-    		})
-    		.fail(function( jqXHR, textStatus, errorThrown ) {
-    			console.log("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
-    		});
-		}
 	/*]]>*/
