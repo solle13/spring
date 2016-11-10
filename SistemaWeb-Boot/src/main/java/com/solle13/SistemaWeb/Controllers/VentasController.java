@@ -58,11 +58,33 @@ public class VentasController {
 		  }
 	  }
 	  
+	  @RequestMapping(value="/ventas_by_id")
+	  @ResponseBody
+	  public List<Ventas> getbyId(int id){
+		  try{
+			  return _ventasDao.getbyId(id);
+		  }catch(Exception ex){
+			  System.out.println("error "+ex);
+			 return null; 
+		  }
+	  }
+	  
 	  @RequestMapping(value="/all_date")
 	  @ResponseBody
 	  public List<Ventas> getbyDate(String fecha1, String fecha2){
 		  try{
 			  return _ventasDao.getbyDate(fecha1,fecha2);
+		  }catch(Exception ex){
+			  System.out.println("error "+ex);
+			 return null; 
+		  }
+	  }
+	  
+	  @RequestMapping(value="/all_date_id")
+	  @ResponseBody
+	  public List<Ventas> getbyDateId(String fecha1, String fecha2, int id){
+		  try{
+			  return _ventasDao.getbyDateAndId(fecha1,fecha2,id);
 		  }catch(Exception ex){
 			  System.out.println("error "+ex);
 			 return null; 

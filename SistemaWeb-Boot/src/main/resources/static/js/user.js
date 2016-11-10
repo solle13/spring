@@ -1,36 +1,45 @@
 /*<![CDATA[*/
 		$(document).ready(function() {
 			window.onload = function(){ 
-				cabecera();
-				TablaSucursal();
-				TablaVentas();
-				$.notify.defaults({position:"bottom center"});
+				var myPromise = new Promise(function(resolve, reject) {
+                   
+                   resolve(cabecera());
+                });
+                myPromise.then(function(data, textStatus){
+                    $("#IdFabrica").val(data.idFabrica);
+                    $("#Cabecera").html("<p><h2>"+data.idFabrica+" - "+data.nombreFabrica+"</h2></p><p><h4>Ubicaci&oacute;n: "+data.ubicacion+", Lider: "+data.lider+"</h4></p>");
+                })
+                .then(function(){
+                    TablaSucursal();
+                    TablaVentas();
+                    $.notify.defaults({position:"bottom center"});
+                })
+                .catch(function(error) {
+                        console.log(error);
+                });
+				
 			};
             
-			var idFabrica;
 			function cabecera(){
 				var lider = document.getElementById("lider_name").innerHTML
-				$.ajax({	
+				return $.ajax({	
     						type: "GET",
     						dataType: "json",
     						url: "/fabrica/get-by-lider?lider="+lider+"", 
 						})  
     					.done(function( data, textStatus, jqXHR ) {
-    						idFabrica=data.idFabrica;
-    						$("#Cabecera").html("<p><h2>"+data.idFabrica+" - "+data.nombreFabrica+"</h2></p><p><h4>Ubicaci&oacute;n: "+data.ubicacion+", Lider: "+data.lider+"</h4></p>");
-							//$.notify("","success");
-    					})
+						})
     					.fail(function( jqXHR, textStatus, errorThrown ) {
-    						$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
+    						console.log("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
     					});
 			}
 
 			function TablaSucursal() { //-------------------Dibujar la tabla sucursal al cargar la pagina---------------
-			
+			 var idFabrica = document.getElementById("IdFabrica").value;
 				$.ajax({
     				type: "GET",
     				dataType: "json",
-    				url: "/Sucursal/all",
+    				url: "/Sucursal/sucursal_by_id?id="+idFabrica+"",
 					})  
     			.done(function( data, textStatus, jqXHR ) {
         			var table = $("#tabla_sucursales").DataTable({
@@ -53,7 +62,7 @@
 					obtener_data_eliminar("#tabla_sucursales tbody",table);
     			})
     			.fail(function( jqXHR, textStatus, errorThrown ) {
-    				$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
+    				console.log("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
 				});
 			}//------------------------------fin tabla sucursales----------------------------------
 
@@ -85,10 +94,9 @@
     				url: "/ventas/delete_sucursal?id="+id+"",
 				})  
     			.done(function( data, textStatus, jqXHR ) {
-    				
     				})
     			.fail(function( jqXHR, textStatus, errorThrown ) {
-     				$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
+     				console.log("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
      			});
 
 				$.ajax({
@@ -98,40 +106,13 @@
     				url: "/Sucursal/delete?id="+id+"",
 				})  
     			.done(function( data, textStatus, jqXHR ) {
-    				$.ajax({	
-    						type: "GET",
-    						dataType: "json",
-    						url: "/Sucursal/all", 
-						})  
-    					.done(function( data, textStatus, jqXHR ) {
-    						$("#id_eliminarSuc").val("");
-    						var table = $("#tabla_sucursales").DataTable();
-    						table.rows().remove();
-    						table.rows.add(data); 
-							table.draw();
-    					})
-    					.fail(function( jqXHR, textStatus, errorThrown ) {
-    						$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
-    					});
-
-    					$.ajax({	////////////////////////////////////////////////actualizar ventas
-    						type: "GET",
-    						dataType: "json",
-    						url: "/ventas/all", 
-						})  
-    					.done(function( data, textStatus, jqXHR ) {
-    						var table = $("#contenidoVenta").DataTable();
-    						table.rows().remove();
-    						table.rows.add(data); 
-							table.draw();
-							$.notify("Se ha eliminado la sucursal","success");
-    					})
-    					.fail(function( jqXHR, textStatus, errorThrown ) {
-    						$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
-    					});
+    				$("#id_eliminarSuc").val("");
+                    MostrarSucursales();
+                    MostarVentas();
+                    $.notify("Se ha eliminado la sucursal","success");
     				})
     			.fail(function( jqXHR, textStatus, errorThrown ) {
-     				$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
+     				console.log("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
      			});
 
 				return false;
@@ -155,30 +136,17 @@
     				$("#ubicacionSuc_edit").val("");
     				$("#idSuc_edit").val("");
     				$("#idFab_edit").val("");
-    				$.ajax({	
-    					type: "GET",
-    					dataType: "json",
-    					url: "/Sucursal/all", 
-					})  
-    				.done(function( data, textStatus, jqXHR ) {
-    					var table = $("#tabla_sucursales").DataTable();
-    					table.rows().remove();
-    					table.rows.add(data); 
-						table.draw();
-						$.notify("Se ha actualizado la sucursal","success");
-    				})
-    				.fail(function( jqXHR, textStatus, errorThrown ) {
-    					$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
-    				});
+                    MostrarSucursales();
+                    $.notify("Se ha actualizado la sucursal","success");
     			})
     			.fail(function( jqXHR, textStatus, errorThrown ) {
-     				$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
+     				console.log("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
      			});
 				return false;
     		}); //---------------------------------------- fin editar sucursal---------------------------------------
 
     		$("#form_savesucursal").submit(function(){ // -----------------------------Guardar sucursal---------------------------
-    			var idfab=idFabrica;
+    			var idfab=document.getElementById("IdFabrica").value;
 				var NombreSucursal = document.getElementById("nombreSuc").value;
 				var Ubicacion = document.getElementById("ubicacionSuc").value;
 			
@@ -192,34 +160,21 @@
     				.done(function( data, textStatus, jqXHR ) {
     					$("#nombreSuc").val("");
     					$("#ubicacionSuc").val("");
-    					$.ajax({	
-    						type: "GET",
-    						dataType: "json",
-    						url: "/Sucursal/all",
-						})  
-    					.done(function( data, textStatus, jqXHR ) {
-    						var table = $("#tabla_sucursales").DataTable();
-    						table.rows().remove();
-    						table.rows.add(data);
-							table.draw();
-							$.notify("Sucursal guardada","success");
-    					})
-    					.fail(function( jqXHR, textStatus, errorThrown ) {
-    						$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
-    					});
+                        MostrarSucursales();
+                        $.notify("Sucursal guardada","success");
     				})
     				.fail(function( jqXHR, textStatus, errorThrown ) {
-     					$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
+     					console.log("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
      				});
 				return false;
 			}); //---------------------------------------fin guardar sucursal------------------------------------
 
 			function TablaVentas() { //-------------------Dibujar la tabla ventas al cargar la pagina---------------
-			
+			     var idFabrica = document.getElementById("IdFabrica").value;
 				$.ajax({
     				type: "GET",
     				dataType: "json",
-    				url: "/ventas/all",
+    				url: "/ventas/ventas_by_id?id="+idFabrica+"",
 					})  
     			.done(function( data, textStatus, jqXHR ) {
         			var table = $("#contenidoVenta").DataTable({
@@ -243,7 +198,7 @@
 					obtener_venta_eliminar("#contenidoVenta tbody",table);
     			})
     			.fail(function( jqXHR, textStatus, errorThrown ) {
-     				$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
+     				console.log("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
 				});
 			}//------------------------------------------fin tabla ventas-------------------------------------------------
 			var obtener_venta_editar = function(tbody,table){ //---boton editar ventas----------
@@ -274,34 +229,22 @@
     				url: "/ventas/delete?id="+id+"",
 				})  
     			.done(function( data, textStatus, jqXHR ) {
-    				$.ajax({	////////////////////////////////////////////////actualizar ventas
-    						type: "GET",
-    						dataType: "json",
-    						url: "/ventas/all", 
-						})  
-    					.done(function( data, textStatus, jqXHR ) {
-    						$("#idventa_eliminar").val("");
-    						var table = $("#contenidoVenta").DataTable();
-    						table.rows().remove();
-    						table.rows.add(data); 
-							table.draw();
-							$.notify("Se ha eliminado la venta","success");
-    					})
-    					.fail(function( jqXHR, textStatus, errorThrown ) {
-    						$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
-    					});
+                    $("#idventa_eliminar").val("");
+                    MostarVentas();
+                    $.notify("Se ha eliminado la venta","success");
     				})
     			.fail(function( jqXHR, textStatus, errorThrown ) {
-     				$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
+     				console.log("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
      			});
      			return false;
     		});//----------------------------------------------eliminar venta ajax------------------------------------------------
 
 			function selector(select){//-----llenado de select
+                var idFabrica = document.getElementById("IdFabrica").value;
     			$.ajax({	
     				type: "GET",
     				dataType: "json",
-    				url: "/Sucursal/all", 
+    				url: "/Sucursal/sucursal_by_id?id="+idFabrica+"", 
 				})  
     			.done(function( data, textStatus, jqXHR ) {
     				var selector=document.getElementById(select);
@@ -311,7 +254,7 @@
     				}
     			})
     			.fail(function( jqXHR, textStatus, errorThrown ) {
-    				$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
+    				console.log("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
     			});
     		
     		}//--------------------------fin llenado de select-----------------------------
@@ -321,7 +264,7 @@
     		});//-----------------------fin de llenado select crear--------------------------
 
     		$("#form_saveVenta").submit(function(){ // -----------------------------Guardar venta---------------------------
-    			var idfab=idFabrica;
+    			var idfab=document.getElementById("IdFabrica").value;
 				var Fecha = document.getElementById("fecha_Venta").value;
 				var Cantidad = document.getElementById("cantidadVenta").value;
 				var idsucursal = document.getElementById("sucursales").value;
@@ -336,24 +279,11 @@
     				.done(function( data, textStatus, jqXHR ) {
     					$("#cantidadVenta").val("");
     					$("#fecha_Venta").val("");
-    					$.ajax({	
-    						type: "GET",
-    						dataType: "json",
-    						url: "/ventas/all",
-						})  
-    					.done(function( data, textStatus, jqXHR ) {
-    						var table = $("#contenidoVenta").DataTable();
-    						table.rows().remove();
-    						table.rows.add(data);
-							table.draw();
-							$.notify("Venta guardada","success");
-    					})
-    					.fail(function( jqXHR, textStatus, errorThrown ) {
-    						$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
-    					});
+                        MostarVentas();
+                        $.notify("Venta guardada","success");
     				})
     				.fail(function( jqXHR, textStatus, errorThrown ) {
-     					$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
+     					console.log("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
      				});
 				return false;
 			}); //---------------------------------------fin guardar venta------------------------------------
@@ -377,96 +307,90 @@
     				$("#Fab_edit").val("");
     				$("#cantidadVenta_editar").val("");
     				$("#fecha_VentaEditar").val("");
-    				$.ajax({	
-    					type: "GET",
-    					dataType: "json",
-    					url: "/ventas/all", 
-					})  
-    				.done(function( data, textStatus, jqXHR ) {
-    					var table = $("#contenidoVenta").DataTable();
-    					table.rows().remove();
-    					table.rows.add(data); 
-						table.draw();
-						$.notify("Se ha actualizado la venta","success");
-    				})
-    				.fail(function( jqXHR, textStatus, errorThrown ) {
-    					$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
-    				});
+                    MostarVentas();
+                    $.notify("Se ha actualizado la venta","success");
     			})
     			.fail(function( jqXHR, textStatus, errorThrown ) {
-     				$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
+     				console.log("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
      			});
 				return false;
     		}); //---------------------------------------- fin editar venta---------------------------------------
 
-    		var matriz;
 
 			function Grafico(fecha1,fecha2){ //--------------------------------------Grafico-------------------------------------
-					$.ajax({
-    					type: "GET",
-    					dataType: "json",
-    					url: "/Sucursal/all",
-						})  
-    				.done(function( data, textStatus, jqXHR ) {
-    					var datos=new Array(data.length);
-    					var i;
-    					for( i = 0; i < data.length; i ++){
-    						datos[i]= new Array(3);
-    					}
+				var idFabrica = document.getElementById("IdFabrica").value;
+                var myPromise = new Promise(function(resolve, reject) {
+                    $.ajax({
+                        type: "GET",
+                        dataType: "json",
+                        url: "/Sucursal/sucursal_by_id?id="+idFabrica+"",
+                        })  
+                    .done(function( data, textStatus, jqXHR ) {
+                        var datos=new Array(data.length);
+                        var i;
+                        for( i = 0; i < data.length; i ++){
+                            datos[i]= new Array(3);
+                        }
 
-    					for( i=0; i < data.length; i ++){
-    						datos[i][0]=data[i].idPunto;
-    						datos[i][1]=data[i].nombrePunto;
-    						datos[i][2]=0;
-    					}
-    					matriz=datos;
+                        for( i=0; i < data.length; i ++){
+                            datos[i][0]=data[i].idPunto;
+                            datos[i][1]=data[i].nombrePunto;
+                            datos[i][2]=0;
+                        }
+                        resolve(datos);
+                    })
+                    .fail(function( jqXHR, textStatus, errorThrown ) {
+                        console.log("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
+                        reject("error");
+                    });
+                });	
 
-    					$.ajax({
-    					type: "GET",
-    					dataType: "json",
-    					url: "/ventas/all_date?fecha1="+fecha1+"&fecha2="+fecha2+"",
-						})  
-    					.done(function( data, textStatus, jqXHR ) {
-    						var i;
-    						var j;
-    						for(i=0; i < data.length; i++){
-    							for(j=0; j < matriz.length; j++){
-    								if(data[i].idPunto == matriz[j][0]){
-    									matriz[j][2]= matriz[j][2] + data[i].cantidad;
-    									//alert("valor de data cantidad: "+data[i].cantidad+", valor total matriz: "+matriz[j][2]);
-    								}
-    							}
-    						}
-    						var etiqueta=new Array(matriz.length);
-    						var valores=new Array(matriz.length);
-    						for(i=0;i<matriz.length;i++){
-    							etiqueta[i]=matriz[i][1];
-    							valores[i]=matriz[i][2];
-    						}
-    						
-    						renderChart(etiqueta,valores);
-    					})
-    					.fail(function( jqXHR, textStatus, errorThrown ) {
-    						$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
-    					});
-    				})
-    				.fail(function( jqXHR, textStatus, errorThrown ) {
-    					$.notify("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
-    				});
-				
-    				function renderChart (etiqueta, valores) {
-    					
-    						var barChartData = {
-     		 					labels: etiqueta,
-      							datasets: [{
-        							label: 'Ganancias',
-        							fillColor : "#6b9dfa",
-									strokeColor : "#ffffff",
-									highlightFill: "#1864f2",
-									highlightStroke: "#ffffff",
-        							data: valores
-      							}]
-    						}
+                myPromise.then(function(matriz){
+                    $.ajax({
+                        type: "GET",
+                        dataType: "json",
+                        url: "/ventas/all_date_id?fecha1="+fecha1+"&fecha2="+fecha2+"&id="+idFabrica+"",
+                        })  
+                    .done(function( data, textStatus, jqXHR ) {
+                        var i;
+                        var j;
+                        for(i=0; i < data.length; i++){
+                            for(j=0; j < matriz.length; j++){
+                                if(data[i].idPunto == matriz[j][0]){
+                                    matriz[j][2]= matriz[j][2] + data[i].cantidad;
+                                }
+                            }
+                        }
+                        var etiqueta=new Array(matriz.length);
+                        var valores=new Array(matriz.length);
+                        for(i=0;i<matriz.length;i++){
+                            etiqueta[i]=matriz[i][1];
+                            valores[i]=matriz[i][2];
+                        }
+                            
+                        renderChart(etiqueta,valores);
+                    })
+                    .fail(function( jqXHR, textStatus, errorThrown ) {
+                        console.log("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
+                    });
+                })
+                .catch(function(error) {
+                    console.log(error);
+                });
+                    
+
+    			function renderChart (etiqueta, valores) {
+    				var barChartData = {
+     		 			labels: etiqueta,
+      					datasets: [{
+        				    label: 'Ganancias',
+        				    fillColor : "#6b9dfa",
+						    strokeColor : "#ffffff",
+						    highlightFill: "#1864f2",
+						    highlightStroke: "#ffffff",
+        				    data: valores
+      					     }]
+    					}
   						var ctx = document.getElementById("myChart").getContext("2d");
   						window.myPie = new Chart(ctx).Bar(barChartData, {responsive:true});
 					}
@@ -499,4 +423,40 @@
 			});//-----------------------------------fin funcion boton crear grafico---------------------------------------------
 
 		});
+
+        function MostarVentas(){
+            var idFabrica = document.getElementById("IdFabrica").value;
+            $.ajax({ 
+                type: "GET",
+                dataType: "json",
+                url: "/ventas/ventas_by_id?id="+idFabrica+"", 
+            })  
+            .done(function( data, textStatus, jqXHR ) {
+                var table = $("#contenidoVenta").DataTable();
+                table.rows().remove();
+                table.rows.add(data); 
+                table.draw();
+            })
+            .fail(function( jqXHR, textStatus, errorThrown ) {
+                console.log("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
+            });
+        }
+
+        function MostrarSucursales(){
+            var idFabrica = document.getElementById("IdFabrica").value;
+            $.ajax({    
+                type: "GET",
+                dataType: "json",
+                url: "/Sucursal/sucursal_by_id?id="+idFabrica+"",
+            })  
+            .done(function( data, textStatus, jqXHR ) {
+                var table = $("#tabla_sucursales").DataTable();
+                table.rows().remove();
+                table.rows.add(data);
+                table.draw();
+            })
+            .fail(function( jqXHR, textStatus, errorThrown ) {
+                console.log("jqxhr: "+jqXHR+", Text Status: "+textStatus+", errorThrown: "+errorThrown+"","error");
+            });
+        }
 	/*]]>*/

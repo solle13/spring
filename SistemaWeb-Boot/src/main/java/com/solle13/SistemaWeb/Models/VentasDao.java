@@ -38,10 +38,26 @@ public class VentasDao {
 	  }
 	  
 	  @SuppressWarnings("unchecked")
+	  public List<Ventas> getbyId(int id) {
+	    return getSession().createQuery("from Ventas where IdFabrica = :id")
+	    		.setParameter("id", id)
+	    		.list();
+	  }
+	  
+	  @SuppressWarnings("unchecked")
 	  public List<Ventas> getbyDate(String fecha1, String fecha2) {
 	    return getSession().createQuery("from Ventas where Fecha >= :fecha1 and Fecha <= :fecha2")
 	    		.setParameter("fecha1", fecha1)
 	    		.setParameter("fecha2", fecha2)
+	    		.list();
+	  }
+	  
+	  @SuppressWarnings("unchecked")
+	  public List<Ventas> getbyDateAndId(String fecha1, String fecha2, int id) {
+	    return getSession().createQuery("from Ventas where Fecha >= :fecha1 and Fecha <= :fecha2 and IdFabrica = :id")
+	    		.setParameter("fecha1", fecha1)
+	    		.setParameter("fecha2", fecha2)
+	    		.setParameter("id", id)
 	    		.list();
 	  }
 	  
