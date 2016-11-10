@@ -35,6 +35,13 @@ public class SucursalesDao {
 	  public List<Sucursales> getAll() {
 	    return getSession().createQuery("from Sucursales").list();
 	  }
+	  
+	  @SuppressWarnings("unchecked")
+	  public List<Sucursales> getbyId(int id) {
+	    return getSession().createQuery("from Sucursales where IdFabrica = :id")
+	    		.setParameter("id",id)
+	    		.list();
+	  }
 	 
 	  public Sucursales getById(int id) {
 	    return (Sucursales) getSession().load(Sucursales.class, id);
