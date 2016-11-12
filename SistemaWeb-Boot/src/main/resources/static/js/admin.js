@@ -21,6 +21,19 @@
 					})  
     			.done(function( data, textStatus, jqXHR ) {
         			var table = $("#contenido").DataTable({
+        				"dom": 'Bfrtip',
+        				"buttons": [
+        					{
+        						extend: 'excelHtml5',
+        						text: '<button type="button" class="btn btn-success btn-lg"><b><i class="fa fa-file-excel-o"></i> Excel</b></button>',
+        						titleAttr: 'Excel'
+        					},
+        					{
+        						extend: 'pdfHtml5',
+        						text: '<button type="button" class="btn btn-success btn-lg"><b><i class="fa fa-file-pdf-o"></i> PDF</b></button>',
+        						titleAttr: 'PDF'
+        					} 
+        					],
 						"destroy" : true,
         				"lengthChange": true,
         				"responsive": true,
@@ -379,6 +392,19 @@
 					})  
     			.done(function( data, textStatus, jqXHR ) {
         			var table = $("#contenidoVenta").DataTable({
+        				"dom": 'Bfrtip',
+        				"buttons": [
+        					{
+        						extend: 'excelHtml5',
+        						text: '<button type="button" class="btn btn-success btn-lg"><b><i class="fa fa-file-excel-o"></i> Excel</b></button>',
+        						titleAttr: 'Excel'
+        					},
+        					{
+        						extend: 'pdfHtml5',
+        						text: '<button type="button" class="btn btn-success btn-lg"><b><i class="fa fa-file-pdf-o"></i> PDF</b></button>',
+        						titleAttr: 'PDF'
+        					} 
+        					],
 						"destroy" : true,
         				"lengthChange": true,
         				"responsive": true,
@@ -471,27 +497,30 @@
 					});
 				
     				function renderChart (etiqueta, valores) {
-    					
-    						var barChartData = {
-     		 					labels: etiqueta,
-      							datasets: [{
-        							label: 'Ganancias',
-        							fillColor : "#6b9dfa",
-									strokeColor : "#ffffff",
-									highlightFill: "#1864f2",
-									highlightStroke: "#ffffff",
-        							data: valores
-      							}]
+    					 						
+    						var color=['#DF0101','#F4FA58','#82FA58','#01DFA5','#2E64FE','#CC2EFA','#DF01A5','#FE9A2E','#FA5882','#81F7D8'];
+    						var colorhigh=['#FE2E2E','#FFFF00','#40FF00','#58FAD0','#013ADF','#8904B1','#FE2EC8','#DF7401','#FE2E64','#A9F5E1'];
+    						var i;
+    						var pieData=[];
+    						for( i=0; i<etiqueta.length; i++ ){
+    							if(i<10)
+    								pieData.push({value: valores[i],color:color[i], highlight: colorhigh[i],label: etiqueta[i]});
+    							else
+    								pieData.push({value: valores[i],color:color[i-10], highlight: colorhigh[i-10],label: etiqueta[i]});
     						}
-  						var ctx = document.getElementById("myChart").getContext("2d");
-  						window.myPie = new Chart(ctx).Bar(barChartData, {responsive:true});
-					}
+						$('#myChart').remove();
+  						$('#div_canvas').append('<canvas id="myChart" width="900px" height="500px"></canvas>');	
+						var canvas = document.getElementById("myChart");	
+  						var ctx = canvas.getContext("2d");
+  						window.myPie = new Chart(ctx).Pie(pieData);	
+						}
     		
 			}// ---------------------------------- fin grafico ----------------------------------------------------
 
 			$("#Crear_Grafico").click(function(){ //----------------funcion boton crear grafico------------------
 				var fecha1=document.getElementById("fecha1").value;
 				var fecha2=document.getElementById("fecha2").value;
+				
 				if(fecha1=="" || fecha2==""){//vacios
 					var hoy = new Date();
 					var dd = hoy.getDate();
